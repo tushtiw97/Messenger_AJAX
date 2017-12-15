@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title id="title">Welcome</title>
+		<meta charset="UTF-8" lang="en" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<script>
+			var user1;
+			var user2;
+			function login() {
+				var user = document.getElementById("user1").value;
+				var pass = document.getElementById("pass").value;
+				user1 = user;
+				if(user.length == 0 || pass.length == 0){
+					alert("Username and Password are required to sign in");
+				}
+				else {
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if(this.readyState == 4 && this.status == 200){
+							if(this.responseText == "Invalid Password"){
+								alert(this.responseText);
+								document.getElementById("pass").value = "";
+							}
+							else if(this.responseText == "Username does not exist"){
+								alert(this.responseText);
+								document.getElementById("user1").value = "";
+								document.getElementById("pass").value = "";
+							}
+							else if(this.responseText == "verified"){
+								document.getElementById("pass").value = "";
+								document.getElementById("login").style.display = "none";
+								document.getElementById("chatsdiv").style.display = "block";
+								
+								// ------------------ start of AJAX code for fetching chats
+								
+								var xmlhttp1 = new XMLHttpRequest();
+								xmlhttp1.onreadystatechange = function() {
+									if(this.readyState == 4 && this.status == 200){
+										document.getElementById("chats").innerHTML = this.responseText;
+										document.getElementById("title").innerHTML = user + " | Home";
+									}
+								};
+								xmlhttp1.open("GET","messenger.php?query=chats&user=" + user + "&pass=" + pass,true);
+								xmlhttp1.send();
+							}
+						}
+					};
+					xmlhttp.open("GET","messenger.php?query=login&user=" + user + "&pass=" + pass,true);
+					xmlhttp.send();
+				}
+			}
+			
+			function backToLogin() {
+				document.getElementById("login").style.display = "block";
+				document.getElementById("chatsdiv").style.display = "none";
+				document.getElementById("title").innerHTML = "Welcome";
+			}
+			
+			function startConversation(contact){
+				user2 = contact;
+				var user = document.getElementById("user1").value;
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200){
+						alert("Selected user to chat with : " + this.responseText);
+						document.getElementById("chatsdiv").style.display = "none";
+						document.getElementById("chatscreen").style.display = "block";
+						document.getElementById("title").innerHTML = user1 + " - " + user2 + " | Chat";
+						loadChats();
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=chatSelect&user2=" + contact + "&user1=" + user,true);
+				xmlhttp.send();
+			}
+			
+			function backToChats(){
+				document.getElementById("chatsdiv").style.display = "block";
+				document.getElementById("chatscreen").style.display = "none";
+				document.getElementById("title").innerHTML = user1 + " | Home";
+			}
+			
+			function sendText(){
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function() {
+					if(this.readyState == 4 && this.status == 200){
+						if(this.responseText == "Insert Successful")
+							alert("Message sent: " + document.getElementById("message").value + " from " + user1 + " to " + user2);
+						else
+							alert("Some error");
+						document.getElementById("message").value = "";
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=sendMsg&user1=" + user1 + "&user2=" + user2 + "&msg=" + document.getElementById("message").value,true);
+				xmlhttp.send();
+			}
+			
+			function loadChats(){
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200){
+						//alert(this.responseText);
+						document.getElementById("texts").innerHTML = this.responseText;
+						loadChats();
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=loadChat&user1=" + user1 + "&user2=" + user2,true);
+				xmlhttp.send();
+			}
+		</script>
+		<style>
+			#msgbox {
+				z-index : 2;
+				border : 1px solid black;
+				position : fixed;
+				bottom : 0px;
+				left : 0px;
+				width : 100%;
+			}
+			
+			#sent {
+				border : 1px solid green;
+				display : inline;
+				width : 50%;
+			}
+			
+			#recvd {
+				border : 1px solid blue;
+				display : inline;
+				width : 50%;
+			}
+			
+			#message {
+				width : 100%;	
+			}
+		</style>
+	</head>
+	<body>
+		<div id="login" style="display:block">
+			<label>Username : </label><input type="text" id="user1" placeholder="Enter Username" />
+			<br>
+			<label>Password : </label><input type="password" id="pass" placeholder="Enter Password" />
+			<br>
+			<button onclick="login()">Login</button>
+		</div>
+		<div id="chatsdiv" style="display:none">
+			Select a chat to start/resume the conversation
+			<p id="chats"></p>
+			<button onclick="backToLogin()">Back</button>
+		</div>
+		<div id="chatscreen" style="display:none">
+			<div id="msgbox">
+				<textarea id="message" placeholder="Enter your text here"></textarea>
+				<button onclick="sendText()">Send</button>
+			</div>
+			<div id="texts">
+				<!--<div id="sent">Sent messages</div>
+				<div id="recvd">Received messages</div>-->
+			</div>
+			<br>
+			<button onclick="backToChats()">Back To Chats</button>
+		</div>
+		<br>
+	</body>
+</html>
