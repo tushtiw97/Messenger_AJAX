@@ -78,6 +78,8 @@
 				document.getElementById("chatsdiv").style.display = "block";
 				document.getElementById("chatscreen").style.display = "none";
 				document.getElementById("title").innerHTML = user1 + " | Home";
+				document.getElementById("newUser").style.display = "none";
+				document.getElementById("viewRequest").style.display = "none";
 			}
 			
 			function sendText(){
@@ -105,6 +107,75 @@
 					}
 				};
 				xmlhttp.open("GET","messenger.php?query=loadChat&user1=" + user1 + "&user2=" + user2,true);
+				xmlhttp.send();
+			}
+			
+			function newUserDiv(){
+				document.getElementById("newUser").style.display = "block";
+				document.getElementById("chatsdiv").style.display = "none";
+				document.getElementById("title").innerHTML = "Add A User | " + user1;
+				document.getElementById("newUserInput").value = "";
+				document.getElementById("addButton").style.display = "none";
+			}
+			
+			function searchUser(){
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200){
+						if(this.responseText == "Valid User"){
+							alert("User found!!");
+							document.getElementById("addButton").style.display = "inline";
+						}
+						else if(this.responseText == "Invalid User"){
+							document.getElementById("newUserInput").value = "";
+							alert("The Username you searched for doesn't exist. Please try with a different possible Username");
+						}
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=checkUser&searchUser=" + document.getElementById("newUserInput").value,true);
+				xmlhttp.send();
+			}
+			
+			function addUser(){
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200){
+						if(this.responseText == "request sent"){
+							alert("A request has been sent to " + document.getElementById("newUserInput").value);
+						}
+						else{
+							alert("Request error. Could not send request");
+						}
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=adduser&addUser=" + document.getElementById("newUserInput").value + "&user1=" + user1,true);
+				xmlhttp.send();
+			}
+			
+			function viewRequestsDiv(){
+				document.getElementById("chatsdiv").style.display = "none";
+				document.getElementById("viewRequest").style.display = "block";
+				document.getElementById("title").innerHTML = "View Requests | " + user1;
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200){
+						document.getElementById("requests").innerHTML = this.responseText;
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=viewRequests&user=" + user1,true);
+				xmlhttp.send();
+			}
+			
+			function acceptRequest(contact){
+				var xmlhttp = new XMLHttpRequest();
+				xmlhttp.onreadystatechange = function(){
+					if(this.readyState == 4 && this.status == 200){
+						if(this.responseText == "Request Accepted"){
+							alert(this.responseText);
+						}
+					}
+				};
+				xmlhttp.open("GET","messenger.php?query=accept&user1=" + user1 + "&contact=" + contact,true);
 				xmlhttp.send();
 			}
 		</script>
@@ -146,6 +217,11 @@
 		<div id="chatsdiv" style="display:none">
 			Select a chat to start/resume the conversation
 			<p id="chats"></p>
+			<hr>
+			<button onclick="newUserDiv()">Add People you may know</button>
+			<br><br>
+			<button onclick="viewRequestsDiv()">View Requests</button>
+			<br><br>
 			<button onclick="backToLogin()">Back</button>
 		</div>
 		<div id="chatscreen" style="display:none">
@@ -160,6 +236,17 @@
 			<br>
 			<button onclick="backToChats()">Back To Chats</button>
 		</div>
-		<br>
+		<div id="newUser" style="display:none">
+			<label>Enter Username of the person : </label><input type="text" id="newUserInput" placeholder="Enter Username here" />
+			<button onclick="searchUser()">Search</button>
+			<br>
+			<button id="addButton" onclick="addUser()" style="display:none">Add</button>
+			<button onclick="backToChats()">Back</button>
+		</div>
+		<div id="viewRequest" style="display:none">
+			<p id="requests"></p>
+			<br>
+			<button onclick="backToChats()">Back</button>
+		</div>
 	</body>
 </html>

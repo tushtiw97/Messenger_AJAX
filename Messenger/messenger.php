@@ -75,4 +75,59 @@
 		echo "</div>";
 		$connection->close();
 	}
+	else if($query == "checkUser"){
+		$user = $_GET['searchUser'];
+		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$result = $connection->query("select Username from LoginTable");
+		$flag = false;
+		while($row = $result->fetch_assoc()){
+			if($row['Username'] == $user){
+				$flag = true;
+				break;
+			}
+		}
+		if($flag){
+			echo "Valid User";
+		}
+		else{
+			echo "Invalid User";
+		}
+		$connection->close();
+	}
+	else if($query == "adduser"){
+		$user2 = $_GET['addUser'];
+		$user1 = $_GET['user1'];
+		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$result = $connection->query("insert into Requests values ('$user1','$user2')");
+		$result2 = $connection->query("insert into Contacts values ('$user1','$user2')");
+		if($result2){
+			if($result){
+				echo "request sent";
+			}
+		}
+		$connection->close();
+	}
+	else if($query == "viewRequests"){
+		$user = $_GET['user'];
+		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$result = $connection->query("select User from Requests where Request='$user'");
+		echo "<table>";
+		echo "<tr><th>Username</th></tr>";
+		while($row = $result->fetch_assoc()){
+			$user2 = $row['User'];
+			echo "<tr><td>".$row['User']."</td><td><button onclick='acceptRequest(\"$user2\")'>Accept</button></td></tr>";
+		}
+		echo "</table>";
+		$connection->close();
+	}
+	else if($query == "accept"){
+		$user = $_GET['user1'];
+		$contact = $_GET['contact'];
+		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$result = $connection->query("insert into Contacts values ('$user','$contact')");
+		if($result){
+			echo "Request Accepted";
+		}
+		$connection->close();
+	}
 ?>
