@@ -1,9 +1,9 @@
 <?php
-	$user1 = $_GET['user'];
-	$pass = $_GET['pass'];
 	$query = $_GET['query'];
 	if($query == "login"){
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$user1 = $_GET['user'];
+	    $pass = $_GET['pass'];
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
 		$result = $connection->query("select Username,Password from LoginTable");
 		$flag = false;
 		while($row = $result->fetch_assoc()){
@@ -23,7 +23,8 @@
 		$connection->close();
 	}
 	else if($query == "chats"){
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+	   $user1 = $_GET['user'];
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
 		$result = $connection->query("select Contact from Contacts where User='$user1'");
 		if(!$result){
 			echo "Query Error<br>";
@@ -44,7 +45,7 @@
 		$user1 = $_GET['user1'];
 		$user2 = $_GET['user2'];
 		$msg = $_GET['msg'];
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
 		$result = $connection->query("select max(ID) from Messages");
 		$row = $result->fetch_assoc();
 		$id = $row['max(ID)'] + 1;
@@ -58,26 +59,28 @@
 	else if($query == "loadChat"){
 		$user1 = $_GET['user1'];
 		$user2 = $_GET['user2'];
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
-		$result = $connection->query("select Message from Messages where Sender='$user1' and Receiver='$user2'");
-		echo "<div id='sent'>Sent messages<br>";
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
+		$result = $connection->query("select * from Messages");
+		echo "<table style='width:100%'>";
 		while($row = $result->fetch_assoc()){
-			echo $row['Message'];
-			echo "<br><br>";
+		    $sender = $row['Sender'];
+		    $receiver = $row['Receiver'];
+		    if($sender == $user1 && $receiver == $user2){
+		        $message = $row['Message'];
+		        echo "<tr><td style='width:50%'></td><td style='width:50%'>".$message."</td></tr>";
+		    }
+		    else if($sender == $user2 && $receiver == $user1){
+		        $message = $row['Message'];
+		        echo "<tr><td style='width:50%'>".$message."</td><td style='width:50%'></td></tr>";
+		    }
 		}
-		echo "</div>";
-		$result = $connection->query("select Message from Messages where Sender='$user2' and Receiver='$user1'");
-		echo "<div id='recvd'>Received messages<br>";
-		while($row = $result->fetch_assoc()){
-			echo $row['Message'];
-			echo "<br><br>";
-		}
-		echo "</div>";
+		echo "</table>";
+		echo "<p id='latest'></p>";
 		$connection->close();
 	}
 	else if($query == "checkUser"){
 		$user = $_GET['searchUser'];
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
 		$result = $connection->query("select Username from LoginTable");
 		$flag = false;
 		while($row = $result->fetch_assoc()){
@@ -97,20 +100,26 @@
 	else if($query == "adduser"){
 		$user2 = $_GET['addUser'];
 		$user1 = $_GET['user1'];
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
-		$result = $connection->query("insert into Requests values ('$user1','$user2')");
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
+		$result = $connection->query("insert into Requests values ('$user1','$user2','Pending')");
 		$result2 = $connection->query("insert into Contacts values ('$user1','$user2')");
 		if($result2){
 			if($result){
 				echo "request sent";
 			}
+			else {
+			    echo "Error in Requests";
+			}
+		}
+		else {
+		    echo "Error in Contacts";
 		}
 		$connection->close();
 	}
 	else if($query == "viewRequests"){
 		$user = $_GET['user'];
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
-		$result = $connection->query("select User from Requests where Request='$user'");
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
+		$result = $connection->query("select User from Requests where Request='$user' and Status='Pending'");
 		echo "<table>";
 		echo "<tr><th>Username</th></tr>";
 		while($row = $result->fetch_assoc()){
@@ -123,11 +132,25 @@
 	else if($query == "accept"){
 		$user = $_GET['user1'];
 		$contact = $_GET['contact'];
-		$connection = new mysqli("localhost","root","tushar1997","ChatApp");
+		$connection = new mysqli("localhost","root","Change Password","ChatApp");
 		$result = $connection->query("insert into Contacts values ('$user','$contact')");
 		if($result){
 			echo "Request Accepted";
 		}
+		$result = $connection->query("update Requests set Status='Accepted' where User='$contact' and Request='$user'");
 		$connection->close();
+	}
+	else if($query == "register"){
+	    $user = $_GET['user'];
+	    $pass = $_GET['pass'];
+	    $connection = new mysqli("localhost","root","Change Password","ChatApp");
+	    $result = $connection->query("insert into LoginTable values ('$user','$pass')");
+	    if(!$result){
+	        echo "error registering";
+	    }
+	    else {
+	        echo "user registered";
+	    }
+	    $connection->close();
 	}
 ?>

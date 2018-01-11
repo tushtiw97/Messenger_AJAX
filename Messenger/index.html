@@ -54,6 +54,7 @@
 			function backToLogin() {
 				document.getElementById("login").style.display = "block";
 				document.getElementById("chatsdiv").style.display = "none";
+				document.getElementById("registerUser").style.display = "none";
 				document.getElementById("title").innerHTML = "Welcome";
 			}
 			
@@ -63,7 +64,7 @@
 				var xmlhttp = new XMLHttpRequest();
 				xmlhttp.onreadystatechange = function() {
 					if(this.readyState == 4 && this.status == 200){
-						alert("Selected user to chat with : " + this.responseText);
+						//alert("Selected user to chat with : " + this.responseText);
 						document.getElementById("chatsdiv").style.display = "none";
 						document.getElementById("chatscreen").style.display = "block";
 						document.getElementById("title").innerHTML = user1 + " - " + user2 + " | Chat";
@@ -87,7 +88,8 @@
 				xmlhttp.onreadystatechange = function() {
 					if(this.readyState == 4 && this.status == 200){
 						if(this.responseText == "Insert Successful")
-							alert("Message sent: " + document.getElementById("message").value + " from " + user1 + " to " + user2);
+							//alert("Message sent: " + document.getElementById("message").value + " from " + user1 + " to " + user2);
+							var m = 4;
 						else
 							alert("Some error");
 						document.getElementById("message").value = "";
@@ -103,6 +105,7 @@
 					if(this.readyState == 4 && this.status == 200){
 						//alert(this.responseText);
 						document.getElementById("texts").innerHTML = this.responseText;
+						//document.getElementById("backbutton").autofocus = true;
 						loadChats();
 					}
 				};
@@ -130,6 +133,7 @@
 							document.getElementById("newUserInput").value = "";
 							alert("The Username you searched for doesn't exist. Please try with a different possible Username");
 						}
+						//alert(this.responseText);
 					}
 				};
 				xmlhttp.open("GET","messenger.php?query=checkUser&searchUser=" + document.getElementById("newUserInput").value,true);
@@ -144,7 +148,7 @@
 							alert("A request has been sent to " + document.getElementById("newUserInput").value);
 						}
 						else{
-							alert("Request error. Could not send request");
+							alert("Request error. Could not send request. " + this.responseText);
 						}
 					}
 				};
@@ -178,15 +182,57 @@
 				xmlhttp.open("GET","messenger.php?query=accept&user1=" + user1 + "&contact=" + contact,true);
 				xmlhttp.send();
 			}
+			
+			function registerUser(){
+			    var reguser = document.getElementById("reguser").value;
+			    var regpass = document.getElementById("regpass").value;
+			    var confirmpass = document.getElementById("regpassconfirm").value;
+			    if(reguser.length == 0 || regpass.length == 0 || confirmpass.length == 0){
+			        alert("Please enter values for all fields mentioned");
+			    }
+			    else if(regpass != confirmpass){
+			        alert("Entered passwords do not match");
+			        document.getElementById("regpass").value = "";
+			        document.getElementById("regpassconfirm").value = "";
+			    }
+			    else {
+			        var xmlhttp = new XMLHttpRequest();
+			        xmlhttp.onreadystatechange = function(){
+			            if(this.readyState == 4 && this.status == 200){
+			                if(this.responseText == "user registered"){
+			                    alert("Registration Successful");
+			                    document.getElementById("registerUser").style.display = "none";
+			                    document.getElementById("login").style.display = "block";
+			                    document.getElementById("title").innerHTML = "Welcome";
+			                }
+			                else {
+			                    alert("Username already exists");
+			                    document.getElementById("reguser").value = "";
+			                    document.getElementById("regpass").value = "";
+			                    document.getElementById("regpassconfirm").value = "";
+			                }
+			            }
+			        };
+			        xmlhttp.open("GET","messenger.php?query=register&user=" + reguser + "&pass=" + regpass,true);
+			        xmlhttp.send();
+			    }
+			}
+			
+			function displayUserRegistration(){
+			    document.getElementById("login").style.display = "none";
+			    document.getElementById("registerUser").style.display = "block";
+			    document.getElementById("title").innerHTML = "Register New User";
+			}
 		</script>
 		<style>
 			#msgbox {
 				z-index : 2;
 				border : 1px solid black;
 				position : fixed;
-				bottom : 0px;
+				bottom : 10%;
 				left : 0px;
 				width : 100%;
+				height : 10%;
 			}
 			
 			#sent {
@@ -202,7 +248,17 @@
 			}
 			
 			#message {
-				width : 100%;	
+				width : 100%;
+				height : 80%;
+			}
+			
+			#textdiv {
+			    width : 100%;
+			    position : absolute;
+			    top : 0px;
+			    left : 0px;
+			    height : 80%;
+			    overflow : scroll;
 			}
 		</style>
 	</head>
@@ -212,7 +268,8 @@
 			<br>
 			<label>Password : </label><input type="password" id="pass" placeholder="Enter Password" />
 			<br>
-			<button onclick="login()">Login</button>
+			<button onclick="login()">Login</button><br>
+			<button onclick="displayUserRegistration()">Register as New User</button>
 		</div>
 		<div id="chatsdiv" style="display:none">
 			Select a chat to start/resume the conversation
@@ -226,15 +283,15 @@
 		</div>
 		<div id="chatscreen" style="display:none">
 			<div id="msgbox">
-				<textarea id="message" placeholder="Enter your text here"></textarea>
-				<button onclick="sendText()">Send</button>
+			    <button onclick="sendText()">Send</button>
+				<textarea autofocus id="message" placeholder="Enter your text here"></textarea>
 			</div>
-			<div id="texts">
-				<!--<div id="sent">Sent messages</div>
-				<div id="recvd">Received messages</div>-->
+			<div id="textdiv">
+			    <button style="z-index:2" onclick="backToChats()">Back To Chats</button>
+			    <div id="texts">
+			    </div>
 			</div>
 			<br>
-			<button onclick="backToChats()">Back To Chats</button>
 		</div>
 		<div id="newUser" style="display:none">
 			<label>Enter Username of the person : </label><input type="text" id="newUserInput" placeholder="Enter Username here" />
@@ -247,6 +304,13 @@
 			<p id="requests"></p>
 			<br>
 			<button onclick="backToChats()">Back</button>
+		</div>
+		<div id="registerUser" style="display:none">
+		    Username : <input type="text" id="reguser" placeholder="Enter desired Username" /><br>
+		    Password : <input type="password" id="regpass" placeholder="Enter password" /><br>
+		    Re-enter Password : <input type="password" id="regpassconfirm" placeholder="Re-enter password" /><br>
+		    <button onclick="registerUser()">Register as New User</button><br>
+		    <button onclick="backToLogin()">Back</button>
 		</div>
 	</body>
 </html>
