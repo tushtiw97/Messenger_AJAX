@@ -99,12 +99,20 @@
 				xmlhttp.send();
 			}
 			
+			var prevResponse = "";
+			
 			function loadChats(){
 				var xmlhttp = new XMLHttpRequest();
 				xmlhttp.onreadystatechange = function(){
 					if(this.readyState == 4 && this.status == 200){
 						//alert(this.responseText);
 						document.getElementById("texts").innerHTML = this.responseText;
+						if(this.responseText != prevResponse){
+						    prevResponse = this.responseText;
+						    var audio = document.getElementById("audio");
+						    audio.currentTime = 0;
+						    audio.play();
+						}
 						//document.getElementById("backbutton").autofocus = true;
 						loadChats();
 					}
@@ -263,6 +271,10 @@
 		</style>
 	</head>
 	<body>
+	    <audio id="audio">
+	        <source src="iPhone Notification Sound Effect.mp3" type="audio/mpeg">
+	    </audio>
+	    <!--<button onclick="play()">Play Audio</button>-->
 		<div id="login" style="display:block">
 			<label>Username : </label><input type="text" id="user1" placeholder="Enter Username" />
 			<br>
@@ -280,6 +292,8 @@
 			<button onclick="viewRequestsDiv()">View Requests</button>
 			<br><br>
 			<button onclick="backToLogin()">Back</button>
+			<p></p>
+			<p></p>
 		</div>
 		<div id="chatscreen" style="display:none">
 			<div id="msgbox">
@@ -312,5 +326,13 @@
 		    <button onclick="registerUser()">Register as New User</button><br>
 		    <button onclick="backToLogin()">Back</button>
 		</div>
+		<script>
+		    /*var audio = document.getElementById("audio");
+		    
+		    function play(){
+		        audio.currentTime = 0;
+		        audio.play();
+		    }*/
+		</script>
 	</body>
 </html>
